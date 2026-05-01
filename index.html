@@ -3,178 +3,214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blending - Nature Pure</title>
+    <title>Blending - Pro Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+
         :root {
-            --main-green: #27ae60;
-            --dark-forest: #145a32;
-            --overlay: rgba(0, 0, 0, 0.4);
+            --bg-color: #0d2a1d; /* Koyu yeşil fon */
+            --accent-color: #b9fbc0; /* Açık yeşil yazı/parlama */
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(185, 251, 192, 0.3);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body, html {
-            width: 100%; height: 100%;
-            font-family: 'Segoe UI', Roboto, sans-serif;
+        body {
+            margin: 0; height: 100vh;
+            background-color: var(--bg-color);
+            color: var(--accent-color);
+            font-family: 'Plus Jakarta Sans', sans-serif;
             display: flex; justify-content: center; align-items: center;
-            overflow: hidden; color: white;
-            /* Arka planı kaliteli bir doğa görseliyle değiştirdim */
-            background: linear-gradient(var(--overlay), var(--overlay)), 
-                        url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2071&auto=format&fit=crop') no-repeat center center fixed;
-            background-size: cover;
         }
 
-        .glass-box {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 25px;
-            padding: 40px;
+        .container {
+            width: 100%; max-width: 800px;
             text-align: center;
-            width: 90%; max-width: 600px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            padding: 20px;
         }
 
-        h1 {
-            font-size: 3.5rem;
-            font-weight: 900; /* Ekstra kalın font */
-            margin-bottom: 20px;
-            color: #fff;
+        /* Üst Bilgi Paneli */
+        .header-info {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px; margin-bottom: 30px;
+            font-weight: 600; opacity: 0.8; font-size: 0.9rem;
+        }
+
+        .dots { display: flex; gap: 8px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(185, 251, 192, 0.2); }
+        .dot.active { background: #ffcc00; box-shadow: 0 0 10px #ffcc00; }
+
+        /* Soru Kartları */
+        .word-badge {
+            display: inline-block;
+            background: rgba(185, 251, 192, 0.1);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 5px 15px;
+            font-size: 0.8rem; margin-bottom: 20px;
+        }
+
+        .word-display {
+            display: flex; justify-content: center; align-items: center;
+            gap: 20px; margin-bottom: 40px;
+        }
+
+        .word-card {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 20px 40px;
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem; letter-spacing: 2px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
             text-transform: uppercase;
-            letter-spacing: -2px;
         }
 
-        .question {
-            font-size: 1.8rem;
-            font-weight: 800;
-            margin-bottom: 30px;
-            display: block;
+        .operator { font-size: 2rem; opacity: 0.6; }
+
+        /* Giriş Alanı */
+        .input-group {
+            display: flex; justify-content: center; gap: 12px; margin-bottom: 40px;
         }
 
-        .input-wrapper {
-            display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;
+        .char-box {
+            width: 60px; height: 75px;
+            background: var(--input-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 2rem; font-weight: 800;
+            color: var(--accent-color);
+            text-align: center; text-transform: uppercase;
+            outline: none; transition: 0.3s;
         }
 
-        .letter-input {
-            width: 45px; height: 60px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 3px solid #fff;
-            border-radius: 10px;
-            font-size: 2rem; font-weight: 900;
-            color: #fff; text-align: center;
-            text-transform: uppercase; outline: none;
-            transition: 0.3s;
+        .char-box:focus {
+            border-color: #ffcc00;
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.3);
+            background: rgba(255, 255, 255, 0.1);
         }
 
-        .letter-input:focus {
-            border-color: var(--main-green);
-            background: rgba(0, 0, 0, 0.5);
-            transform: translateY(-5px);
-        }
-
-        .letter-input.correct {
-            background: var(--main-green);
-            border-color: #fff;
-        }
-
-        .btn-action {
-            margin-top: 30px;
-            padding: 15px 35px;
-            font-size: 1.2rem;
-            font-weight: 900;
-            color: #fff;
-            background: var(--main-green);
-            border: none; border-radius: 50px;
+        /* Buton */
+        .btn-check {
+            background: transparent;
+            border: 2px solid var(--border-color);
+            color: var(--accent-color);
+            padding: 15px 45px; border-radius: 50px;
+            font-size: 1.1rem; font-weight: 800;
             cursor: pointer; transition: 0.3s;
+            text-transform: uppercase;
         }
 
-        .btn-action:hover {
-            background: var(--dark-forest);
-            transform: scale(1.05);
+        .btn-check:hover {
+            background: var(--accent-color);
+            color: var(--bg-color);
+            box-shadow: 0 0 20px var(--accent-color);
         }
 
-        #timer { font-weight: 900; color: var(--main-green); font-size: 1.2rem; }
+        .success { border-color: #4db33d !important; color: #4db33d !important; }
     </style>
 </head>
 <body>
 
-    <div class="glass-box" id="main-container">
-        <div id="start-ui">
-            <h1>BLENDİNG</h1>
-            <p style="font-weight: 600; margin-bottom: 20px;">Doğa ve Kelimelerin Uyumu</p>
-            <button class="btn-action" onclick="start()">BAŞLA</button>
+    <div class="container" id="game-app">
+        <!-- Header -->
+        <div class="header-info">
+            <span id="q-label">SORU 1 / 10</span>
+            <div class="dots" id="dots-container"></div>
+            <span>🍃 Süresiz</span>
         </div>
 
-        <div id="game-ui" style="display: none;">
-            <div id="timer">00:00</div>
-            <div class="question" id="q-text">---</div>
-            <div class="input-wrapper" id="inputs"></div>
-            <button class="btn-action" style="background: rgba(255,255,255,0.2);" onclick="next()">PAS GEÇ</button>
+        <div id="content">
+            <div class="word-badge" id="hint-badge">Britanya & Çıkış</div>
+            
+            <div class="word-display">
+                <div class="word-card" id="w1">BRITAIN</div>
+                <div class="operator">+</div>
+                <div class="word-card" id="w2">EXIT</div>
+            </div>
+
+            <div class="operator" style="margin-bottom: 20px;">=</div>
+
+            <div class="input-group" id="input-area"></div>
+
+            <button class="btn-check" onclick="processCheck()">KONTROL ET ✓</button>
         </div>
     </div>
 
 <script>
-    const words = [
-        {q: "Bloom + Biology", a: "Bloomology"}, {q: "Leaf + Purity", a: "Leafity"},
-        {q: "Root + Utopia", a: "Rootopia"}, {q: "Forest + Static", a: "Forestatic"},
-        {q: "Eco + System", a: "Ecosystem"}, {q: "Garden + Energy", a: "Gardenergy"}
+    const dataset = [
+        {w1: "BRITAIN", w2: "EXIT", ans: "BREXIT", hint: "Britanya & Çıkış"},
+        {w1: "SMOKE", w2: "FOG", ans: "SMOG", hint: "Duman & Sis"},
+        {w1: "MOTOR", w2: "HOTEL", ans: "MOTEL", hint: "Motor & Otel"},
+        {w1: "BREAKFAST", w2: "LUNCH", ans: "BRUNCH", hint: "Kahvaltı & Öğle Yemeği"},
+        {w1: "CAMERA", w2: "RECORDER", ans: "CAMCORDER", hint: "Kamera & Kaydedici"}
     ];
 
-    let current = 0, score = 0, startTime;
+    let currentIdx = 0;
 
-    function start() {
-        document.getElementById('start-ui').style.display = 'none';
-        document.getElementById('game-ui').style.display = 'block';
-        startTime = Date.now();
-        setInterval(updateClock, 1000);
-        load();
+    function init() {
+        const dotContainer = document.getElementById('dots-container');
+        dotContainer.innerHTML = '';
+        for(let i=0; i<10; i++) {
+            let d = document.createElement('div');
+            d.className = i === currentIdx ? 'dot active' : 'dot';
+            dotContainer.appendChild(d);
+        }
+        loadLevel();
     }
 
-    function load() {
-        const item = words[current];
-        document.getElementById('q-text').textContent = item.q;
-        const box = document.getElementById('inputs');
-        box.innerHTML = '';
+    function loadLevel() {
+        const level = dataset[currentIdx % dataset.length];
+        document.getElementById('q-label').textContent = `SORU ${currentIdx + 1} / 10`;
+        document.getElementById('w1').textContent = level.w1;
+        document.getElementById('w2').textContent = level.w2;
+        document.getElementById('hint-badge').textContent = level.hint;
         
-        for(let i=0; i<item.a.length; i++) {
+        const area = document.getElementById('input-area');
+        area.innerHTML = '';
+        
+        for(let i=0; i < level.ans.length; i++) {
             let inp = document.createElement('input');
-            inp.className = 'letter-input';
+            inp.className = 'char-box';
             inp.maxLength = 1;
             inp.oninput = (e) => {
-                if(e.target.value && box.children[i+1]) box.children[i+1].focus();
-                check();
+                if(e.target.value && area.children[i+1]) area.children[i+1].focus();
             };
-            box.appendChild(inp);
+            inp.onkeydown = (e) => {
+                if(e.key === 'Backspace' && !e.target.value && area.children[i-1]) area.children[i-1].focus();
+            };
+            area.appendChild(inp);
         }
-        box.children[0].focus();
+        area.children[0].focus();
     }
 
-    function check() {
-        const inps = document.querySelectorAll('.letter-input');
-        const guess = Array.from(inps).map(i => i.value).join('').toLowerCase();
-        const ans = words[current].a.toLowerCase();
+    function processCheck() {
+        const inps = document.querySelectorAll('.char-box');
+        const userVal = Array.from(inps).map(i => i.value).join('').toUpperCase();
+        const correctVal = dataset[currentIdx % dataset.length].ans;
 
-        if(guess === ans) {
-            inps.forEach(i => i.classList.add('correct'));
-            score++;
-            setTimeout(next, 600);
+        if(userVal === correctVal) {
+            inps.forEach(i => i.classList.add('success'));
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#b9fbc0'] });
+            
+            setTimeout(() => {
+                currentIdx++;
+                if(currentIdx < 10) {
+                    init();
+                } else {
+                    document.getElementById('content').innerHTML = "<h1>TEBRİKLER!</h1><button class='btn-check' onclick='location.reload()'>YENİDEN BAŞLA</button>";
+                }
+            }, 1500);
+        } else {
+            inps.forEach(i => {
+                i.style.borderColor = '#ff4b2b';
+                setTimeout(() => i.style.borderColor = '', 500);
+            });
         }
     }
 
-    function next() {
-        current++;
-        if(current < words.length) load();
-        else {
-            document.getElementById('main-container').innerHTML = `<h1>BİTTİ!</h1><p style='font-weight:800'>SKOR: ${score}/${words.length}</p>`;
-            confetti();
-        }
-    }
-
-    function updateClock() {
-        let sec = Math.floor((Date.now() - startTime) / 1000);
-        document.getElementById('timer').textContent = new Date(sec * 1000).toISOString().substr(14, 5);
-    }
+    init();
 </script>
 </body>
 </html>
