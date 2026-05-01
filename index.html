@@ -3,190 +3,275 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Kelime Türetme Oyunu</title>
+    <title>Blending Pro - Neon Edition</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        /* --- GENEL TASARIM --- */
+        :root {
+            --neon-green: #39ff14;
+            --neon-red: #ff3131;
+            --neon-blue: #00d4ff;
+            --glass: rgba(15, 15, 25, 0.85);
+        }
+
+        * { box-sizing: border-box; }
+
         body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            font-family: 'Orbitron', 'Segoe UI', sans-serif;
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; color: white;
+            transition: 1.5s;
+            background: #050505; /* Resim yüklenene kadar siyah */
         }
 
-        #bg {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), 
-                              url('https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1920&q=80');
+        /* Arka plan resimlerini buraya bağladım kanka */
+        .bg-layer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('gece.png') no-repeat center center fixed;
+            background-size: cover; z-index: -1; transition: 1s;
+        }
+
+        body.day-mode .bg-layer {
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('gunduz.png') no-repeat center center fixed;
             background-size: cover;
-            background-position: center;
-            z-index: -1;
         }
 
-        .container {
-            background: rgba(255, 255, 255, 0.95);
+        .neon-card {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
             padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-radius: 30px;
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 20px var(--neon-blue), inset 0 0 10px rgba(0, 212, 255, 0.2);
             text-align: center;
-            width: 90%;
-            max-width: 500px;
+            width: 95%; max-width: 600px;
+            animation: float 4s ease-in-out infinite;
         }
 
-        h1 { color: #2c3e50; margin-bottom: 20px; font-size: 1.5rem; }
-        
-        .formula {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #27ae60;
-            margin: 20px 0;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
 
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            font-size: 1.2rem;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            box-sizing: border-box;
-            margin-bottom: 20px;
-            text-align: center;
-            outline: none;
-            transition: border-color 0.3s;
+        .letter-input {
+            width: 45px; height: 55px;
+            margin: 5px; font-size: 1.8rem;
+            text-align: center; text-transform: uppercase;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 10px; color: white; outline: none;
+            transition: 0.3s;
         }
 
-        input[type="text"]:focus { border-color: #27ae60; }
+        .letter-input:focus { border-color: var(--neon-blue); box-shadow: 0 0 15px var(--neon-blue); }
+        .letter-input.correct { border-color: var(--neon-green); color: var(--neon-green); box-shadow: 0 0 15px var(--neon-green); }
+        .letter-input.error { border-color: var(--neon-red); color: var(--neon-red); animation: shake 0.4s; }
 
-        button {
-            background: #27ae60;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            font-size: 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.3s;
+        .revealed-answer {
+            color: var(--neon-red); font-size: 1.2rem; font-weight: bold;
+            margin-top: 10px; min-height: 25px; text-shadow: 0 0 10px var(--neon-red);
         }
 
-        button:hover { background: #219150; }
-
-        #feedback {
-            margin-top: 15px;
-            font-weight: bold;
-            min-height: 24px;
+        .btn {
+            background: transparent; border: 2px solid var(--neon-blue);
+            color: white; padding: 12px 25px; margin: 10px;
+            border-radius: 50px; cursor: pointer; font-weight: bold;
+            transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
         }
 
-        .progress {
-            margin-top: 20px;
-            font-size: 0.9rem;
-            color: #7f8c8d;
+        .btn:hover { background: var(--neon-blue); box-shadow: 0 0 20px var(--neon-blue); color: black; }
+        .btn-pass { border-color: var(--neon-red); color: var(--neon-red); }
+        .btn-pass:hover { background: var(--neon-red); color: white; box-shadow: 0 0 20px var(--neon-red); }
+
+        #tube-container {
+            position: fixed; right: 30px; height: 300px; width: 30px;
+            border: 2px solid var(--neon-green); border-radius: 20px;
+            display: none; padding: 3px;
+        }
+        #tube-fill {
+            width: 100%; background: var(--neon-green); border-radius: 15px;
+            box-shadow: 0 0 15px var(--neon-green); transition: 0.5s;
         }
 
-        /* --- SONUÇ EKRANI --- */
-        #final-screen { display: none; }
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
     </style>
 </head>
 <body>
 
-    <div id="bg"></div>
+    <div class="bg-layer"></div>
+    <div id="tube-container"><div id="tube-fill" style="height: 0%; margin-top: auto;"></div></div>
 
-    <div class="container" id="game-screen">
-        <h1 id="title">Kelime Birleştirme</h1>
-        <div class="progress" id="counter">Soru: 1 / 10</div>
-        <div class="formula" id="current-formula">Atmosphere + feel</div>
-        
-        <input type="text" id="user-input" placeholder="Cevabınızı yazın..." autocomplete="off">
-        <br>
-        <button onclick="checkAnswer()">Onayla</button>
-        
-        <div id="feedback"></div>
+    <!-- Menü Ekranı -->
+    <div class="neon-card" id="menu-screen">
+        <h1 style="text-shadow: 0 0 15px var(--neon-blue); margin: 0;">BLENDİNG PRO</h1>
+        <p style="opacity: 0.8; margin-bottom: 30px;">Zihnini Neon Işıklarıyla Birleştir</p>
+        <button class="btn" onclick="startGame('free')">Sonsuz Mod</button>
+        <button class="btn" onclick="startGame('timed')" style="border-color: orange;">Süreli Yarış (15s)</button>
     </div>
 
-    <div class="container" id="final-screen">
-        <h1>TEBRİKLER!</h1>
-        <p>Tüm kelimeleri başarıyla tamamladınız.</p>
-        <button onclick="location.reload()">Tekrar Oyna</button>
+    <!-- Oyun Ekranı -->
+    <div class="neon-card" id="game-screen" style="display: none;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 20px; color: var(--neon-blue);">
+            <span id="stopwatch">00:00</span>
+            <span id="q-counter">1 / 10</span>
+            <span id="timed-info" style="color: orange; display: none;">Süre: <span id="countdown">15</span></span>
+        </div>
+        <div id="current-q" style="font-size: 1.6rem; font-weight: bold; margin-bottom: 20px;">---</div>
+        <div id="letter-box"></div>
+        <div id="reveal-zone" class="revealed-answer"></div>
+        <button class="btn btn-pass" onclick="passQuestion()">PAS GEÇ</button>
     </div>
 
-    <script>
-        // Veri Seti
-        const originalData = [
-            { question: "Atmosphere + feel", answer: "Atmosfeel" },
-            { question: "Pollen + energize", answer: "Pollenize" },
-            { question: "Petal + balance", answer: "Petalance" },
-            { question: "Green + innovate", answer: "Greenovate" },
-            { question: "Earth + ethic", answer: "Earthic" },
-            { question: "Root + routine", answer: "Rootine" },
-            { question: "Nature + real", answer: "Natureal" },
-            { question: "Leaf + lifestyle", answer: "Leafstyle" },
-            { question: "Nature + relief", answer: "Naturelief" },
-            { question: "Solar + artistic", answer: "Solaristhic" }
-        ];
+    <!-- Bitiş Ekranı -->
+    <div class="neon-card" id="final-screen" style="display: none;">
+        <h2 id="final-status" style="text-shadow: 0 0 15px var(--neon-green);">GÖREV TAMAMLANDI</h2>
+        <p id="final-stats"></p>
+        <button class="btn" onclick="location.reload()">TEKRAR DENE</button>
+    </div>
 
-        let gameData = [];
-        let currentIndex = 0;
+<script>
+    // Ses efektleri kanka
+    const sounds = {
+        correct: new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'),
+        error: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
+        click: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'),
+        fail: new Audio('https://assets.mixkit.co/active_storage/sfx/953/953-preview.mp3')
+    };
 
-        // Karıştırma Fonksiyonu (Fisher-Yates Shuffle)
-        function shuffleData(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
+    const words = [
+        {q: "Bloom + Biology", a: "Bloomology"}, {q: "Sprout + Maintain", a: "Sproutain"}, {q: "Floral + Universe", a: "Floraverse"},
+        {q: "Verdant + Nature", a: "Verdanture"}, {q: "Stem + Empathy", a: "Stempathy"}, {q: "Seed + Landscape", a: "Seedscape"},
+        {q: "Branch + Chic", a: "Branchic"}, {q: "Moss + Osmosis", a: "Mossmosis"}, {q: "Twig + Digital", a: "Twigital"},
+        {q: "Leaf + Purity", a: "Leafity"}, {q: "Vine + Innovate", a: "Vinevate"}, {q: "Fern + Finish", a: "Fernish"},
+        {q: "Root + Utopia", a: "Rootopia"}, {q: "Bud + Flow", a: "Budflow"}, {q: "Bark + Architecture", a: "Barkitecture"},
+        {q: "Petal + Logic", a: "Petalogic"}, {q: "Leaf + Evolution", a: "Leafolution"}, {q: "Forest + Static", a: "Forestatic"},
+        {q: "Bloom + Mania", a: "Bloomania"}, {q: "Wild + Design", a: "Wildesign"}, {q: "Eco + System", a: "Ecosystem"},
+        {q: "Garden + Energy", a: "Gardenergy"}, {q: "Green + Galaxy", a: "Greenglaxy"}, {q: "Earth + Rhythm", a: "Earththm"}
+    ];
+
+    let currentIndex = 0, gameData = [], mode = 'free', timer, countdown, timeLeft = 15, score = 0;
+
+    function startGame(m) {
+        mode = m;
+        gameData = [...words].sort(() => 0.5 - Math.random()).slice(0, 10);
+        document.getElementById('menu-screen').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'block';
+        document.getElementById('tube-container').style.display = 'flex';
+        document.body.classList.add('day-mode'); // Gündüz resmine geçer
+        
+        if(mode === 'timed') {
+            document.getElementById('timed-info').style.display = 'block';
         }
+        
+        startStopwatch();
+        loadLevel();
+    }
 
-        function initGame() {
-            gameData = shuffleData([...originalData]); // Veriyi kopyala ve karıştır
-            currentIndex = 0;
-            updateUI();
-        }
-
-        function updateUI() {
-            if (currentIndex < gameData.length) {
-                document.getElementById('current-formula').textContent = gameData[currentIndex].question;
-                document.getElementById('counter').textContent = `Soru: ${currentIndex + 1} / ${gameData.length}`;
-                document.getElementById('user-input').value = '';
-                document.getElementById('feedback').textContent = '';
-                document.getElementById('user-input').focus();
-            } else {
-                document.getElementById('game-screen').style.display = 'none';
-                document.getElementById('final-screen').style.display = 'block';
-            }
-        }
-
-        function checkAnswer() {
-            const userInput = document.getElementById('user-input').value.trim();
-            const correctAnswer = gameData[currentIndex].answer;
-            const feedback = document.getElementById('feedback');
-
-            if (userInput.toLowerCase() === correctAnswer.toLowerCase()) {
-                feedback.textContent = "Doğru!";
-                feedback.style.color = "#27ae60";
-                setTimeout(() => {
-                    currentIndex++;
-                    updateUI();
-                }, 800);
-            } else {
-                feedback.textContent = "Hatalı yazım, tekrar deneyiniz.";
-                feedback.style.color = "#e74c3c";
-            }
-        }
-
-        // Enter tuşu ile onaylama desteği
-        document.getElementById('user-input').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
+    function loadLevel() {
+        const cur = gameData[currentIndex];
+        document.getElementById('current-q').textContent = cur.q;
+        document.getElementById('q-counter').textContent = `${currentIndex + 1} / 10`;
+        document.getElementById('reveal-zone').textContent = '';
+        
+        const box = document.getElementById('letter-box');
+        box.innerHTML = '';
+        
+        for(let i=0; i<cur.a.length; i++) {
+            let inp = document.createElement('input');
+            inp.className = 'letter-input';
+            inp.maxLength = 1;
+            inp.addEventListener('input', (e) => {
+                sounds.click.currentTime = 0;
+                sounds.click.play();
+                if(e.target.value && box.children[i+1]) box.children[i+1].focus();
                 checkAnswer();
-            }
-        });
+            });
+            inp.addEventListener('keydown', (e) => {
+                if(e.key === 'Backspace' && !e.target.value && box.children[i-1]) box.children[i-1].focus();
+            });
+            box.appendChild(inp);
+        }
+        box.children[0].focus();
+        if(mode === 'timed') startCountdown();
+    }
 
-        // Oyunu başlat
-        initGame();
-    </script>
+    function checkAnswer() {
+        const inps = document.querySelectorAll('.letter-input');
+        let val = Array.from(inps).map(i => i.value).join('');
+        let target = gameData[currentIndex].a;
+
+        if(val.length === target.length) {
+            if(val.toLowerCase() === target.toLowerCase()) {
+                sounds.correct.play();
+                inps.forEach(i => i.className = 'letter-input correct');
+                score++;
+                updateTube();
+                clearInterval(countdown);
+                setTimeout(next, 800);
+            } else {
+                sounds.error.play();
+                inps.forEach(i => {
+                    i.classList.add('error');
+                    setTimeout(() => i.classList.remove('error'), 400);
+                });
+            }
+        }
+    }
+
+    function passQuestion() {
+        sounds.fail.play();
+        document.getElementById('reveal-zone').textContent = "Doğru Cevap: " + gameData[currentIndex].a;
+        const inps = document.querySelectorAll('.letter-input');
+        inps.forEach((inp, idx) => {
+            inp.value = gameData[currentIndex].a[idx];
+            inp.style.color = 'var(--neon-red)';
+        });
+        clearInterval(countdown);
+        setTimeout(next, 1500);
+    }
+
+    function startCountdown() {
+        timeLeft = 15;
+        document.getElementById('countdown').textContent = timeLeft;
+        clearInterval(countdown);
+        countdown = setInterval(() => {
+            timeLeft--;
+            document.getElementById('countdown').textContent = timeLeft;
+            if(timeLeft <= 0) {
+                clearInterval(countdown);
+                passQuestion();
+            }
+        }, 1000);
+    }
+
+    function updateTube() {
+        document.getElementById('tube-fill').style.height = (score * 10) + '%';
+    }
+
+    function next() {
+        currentIndex++;
+        if(currentIndex < 10) loadLevel();
+        else finish();
+    }
+
+    function startStopwatch() {
+        let sec = 0;
+        timer = setInterval(() => {
+            sec++;
+            let m = Math.floor(sec/60).toString().padStart(2,'0');
+            let s = (sec%60).toString().padStart(2,'0');
+            document.getElementById('stopwatch').textContent = `${m}:${s}`;
+        }, 1000);
+    }
+
+    function finish() {
+        clearInterval(timer);
+        document.body.classList.remove('day-mode'); // Gece resmine geri döner
+        document.getElementById('game-screen').style.display = 'none';
+        document.getElementById('final-screen').style.display = 'block';
+        document.getElementById('final-stats').innerHTML = `Süre: ${document.getElementById('stopwatch').textContent}<br>Başarı: 10 soruda ${score} doğru!`;
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+    }
+</script>
 </body>
 </html>
