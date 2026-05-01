@@ -3,94 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blending Pro - Neon Edition</title>
+    <title>Blending - Nature Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
-            --neon-green: #39ff14;
-            --neon-red: #ff3131;
-            --neon-blue: #00d4ff;
-            --glass: rgba(15, 15, 25, 0.85);
+            --nature-green: #2e7d32;
+            --soft-green: #81c784;
+            --error-red: #d32f2f;
+            --overlay: rgba(0, 0, 0, 0.5);
+            --card-bg: rgba(20, 30, 20, 0.85);
         }
 
         * { box-sizing: border-box; }
 
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
-            font-family: 'Orbitron', 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             display: flex; justify-content: center; align-items: center;
             overflow: hidden; color: white;
-            transition: 1.5s;
-            background: #050505; /* Resim yüklenene kadar siyah */
+            transition: 1.5s ease-in-out;
+            background: #1b5e20; 
         }
 
-        /* Arka plan resimlerini buraya bağladım kanka */
+        /* Arka plan katmanı */
         .bg-layer {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('gece.png') no-repeat center center fixed;
-            background-size: cover; z-index: -1; transition: 1s;
+            background: linear-gradient(var(--overlay), var(--overlay)), url('gece.png') no-repeat center center fixed;
+            background-size: cover; z-index: -1; transition: 1.2s;
         }
 
         body.day-mode .bg-layer {
-            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('gunduz.png') no-repeat center center fixed;
+            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('gunduz.png') no-repeat center center fixed;
             background-size: cover;
         }
 
-        .neon-card {
-            background: var(--glass);
-            backdrop-filter: blur(15px);
+        .nature-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
             padding: 40px;
-            border-radius: 30px;
-            border: 2px solid var(--neon-blue);
-            box-shadow: 0 0 20px var(--neon-blue), inset 0 0 10px rgba(0, 212, 255, 0.2);
+            border-radius: 20px;
+            border: 3px solid var(--nature-green);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
             text-align: center;
-            width: 95%; max-width: 600px;
-            animation: float 4s ease-in-out infinite;
+            width: 95%; max-width: 580px;
+            position: relative;
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+        h1 {
+            font-weight: 900; /* Kalın font */
+            font-size: 2.5rem;
+            color: var(--soft-green);
+            margin: 0 0 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
+
+        p { font-weight: 600; opacity: 0.9; }
 
         .letter-input {
-            width: 45px; height: 55px;
-            margin: 5px; font-size: 1.8rem;
+            width: 48px; height: 58px;
+            margin: 4px; font-size: 2rem;
+            font-weight: 800; /* Harfler daha kalın */
             text-align: center; text-transform: uppercase;
-            background: rgba(255,255,255,0.05);
-            border: 2px solid rgba(255,255,255,0.2);
-            border-radius: 10px; color: white; outline: none;
-            transition: 0.3s;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid var(--soft-green);
+            border-radius: 12px; color: white; outline: none;
+            transition: 0.2s;
         }
 
-        .letter-input:focus { border-color: var(--neon-blue); box-shadow: 0 0 15px var(--neon-blue); }
-        .letter-input.correct { border-color: var(--neon-green); color: var(--neon-green); box-shadow: 0 0 15px var(--neon-green); }
-        .letter-input.error { border-color: var(--neon-red); color: var(--neon-red); animation: shake 0.4s; }
+        .letter-input:focus { 
+            background: rgba(255,255,255,0.2);
+            border-color: #ffffff;
+        }
 
-        .revealed-answer {
-            color: var(--neon-red); font-size: 1.2rem; font-weight: bold;
-            margin-top: 10px; min-height: 25px; text-shadow: 0 0 10px var(--neon-red);
+        .letter-input.correct { 
+            background: var(--nature-green); 
+            border-color: #fff; 
+            box-shadow: 0 0 10px var(--soft-green);
+        }
+
+        .letter-input.error { 
+            background: var(--error-red); 
+            animation: shake 0.4s; 
         }
 
         .btn {
-            background: transparent; border: 2px solid var(--neon-blue);
-            color: white; padding: 12px 25px; margin: 10px;
-            border-radius: 50px; cursor: pointer; font-weight: bold;
-            transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
+            background: var(--nature-green);
+            border: none; color: white;
+            padding: 15px 30px; margin: 10px;
+            border-radius: 10px; cursor: pointer;
+            font-weight: 800; font-size: 1.1rem;
+            transition: 0.3s;
         }
 
-        .btn:hover { background: var(--neon-blue); box-shadow: 0 0 20px var(--neon-blue); color: black; }
-        .btn-pass { border-color: var(--neon-red); color: var(--neon-red); }
-        .btn-pass:hover { background: var(--neon-red); color: white; box-shadow: 0 0 20px var(--neon-red); }
+        .btn:hover { background: var(--soft-green); transform: translateY(-2px); }
+
+        .btn-pass {
+            background: transparent;
+            border: 2px solid var(--error-red);
+            color: var(--error-red);
+        }
+
+        .btn-pass:hover { background: var(--error-red); color: white; }
 
         #tube-container {
-            position: fixed; right: 30px; height: 300px; width: 30px;
-            border: 2px solid var(--neon-green); border-radius: 20px;
-            display: none; padding: 3px;
+            position: fixed; left: 30px; height: 280px; width: 25px;
+            background: rgba(0,0,0,0.3); border: 2px solid var(--soft-green);
+            border-radius: 15px; display: none; align-items: flex-end; padding: 2px;
         }
         #tube-fill {
-            width: 100%; background: var(--neon-green); border-radius: 15px;
-            box-shadow: 0 0 15px var(--neon-green); transition: 0.5s;
+            width: 100%; background: linear-gradient(to top, var(--nature-green), var(--soft-green));
+            border-radius: 12px; transition: height 0.5s ease;
+        }
+
+        .revealed-text {
+            height: 30px; margin-top: 15px; font-weight: 800; color: #ffeb3b;
         }
 
         @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
@@ -99,43 +126,38 @@
 <body>
 
     <div class="bg-layer"></div>
-    <div id="tube-container"><div id="tube-fill" style="height: 0%; margin-top: auto;"></div></div>
+    <div id="tube-container"><div id="tube-fill" style="height: 0%;"></div></div>
 
-    <!-- Menü Ekranı -->
-    <div class="neon-card" id="menu-screen">
-        <h1 style="text-shadow: 0 0 15px var(--neon-blue); margin: 0;">BLENDİNG PRO</h1>
-        <p style="opacity: 0.8; margin-bottom: 30px;">Zihnini Neon Işıklarıyla Birleştir</p>
-        <button class="btn" onclick="startGame('free')">Sonsuz Mod</button>
-        <button class="btn" onclick="startGame('timed')" style="border-color: orange;">Süreli Yarış (15s)</button>
+    <div class="nature-card" id="menu-screen">
+        <h1>BLENDİNG</h1>
+        <p>Doğanın Gücüyle Kelimeleri Birleştir</p>
+        <button class="btn" onclick="startGame('free')">OYUNA BAŞLA</button>
+        <button class="btn" onclick="startGame('timed')" style="background: #f57c00;">SÜRELİ MOD (15s)</button>
     </div>
 
-    <!-- Oyun Ekranı -->
-    <div class="neon-card" id="game-screen" style="display: none;">
-        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 20px; color: var(--neon-blue);">
+    <div class="nature-card" id="game-screen" style="display: none;">
+        <div style="display: flex; justify-content: space-between; font-weight: 800; margin-bottom: 20px;">
             <span id="stopwatch">00:00</span>
             <span id="q-counter">1 / 10</span>
-            <span id="timed-info" style="color: orange; display: none;">Süre: <span id="countdown">15</span></span>
+            <span id="timed-info" style="color: #ffeb3b; display: none;">Kalan: <span id="countdown">15</span></span>
         </div>
-        <div id="current-q" style="font-size: 1.6rem; font-weight: bold; margin-bottom: 20px;">---</div>
+        <div id="current-q" style="font-size: 1.8rem; font-weight: 900; margin-bottom: 25px; color: #fff;">---</div>
         <div id="letter-box"></div>
-        <div id="reveal-zone" class="revealed-answer"></div>
-        <button class="btn btn-pass" onclick="passQuestion()">PAS GEÇ</button>
+        <div id="reveal-zone" class="revealed-text"></div>
+        <button class="btn btn-pass" onclick="passQuestion()">PAS GEÇ / CEVABI GÖR</button>
     </div>
 
-    <!-- Bitiş Ekranı -->
-    <div class="neon-card" id="final-screen" style="display: none;">
-        <h2 id="final-status" style="text-shadow: 0 0 15px var(--neon-green);">GÖREV TAMAMLANDI</h2>
-        <p id="final-stats"></p>
-        <button class="btn" onclick="location.reload()">TEKRAR DENE</button>
+    <div class="nature-card" id="final-screen" style="display: none;">
+        <h1>TEBRİKLER!</h1>
+        <p id="final-stats" style="font-size: 1.2rem;"></p>
+        <button class="btn" onclick="location.reload()">TEKRAR OYNA</button>
     </div>
 
 <script>
-    // Ses efektleri kanka
     const sounds = {
         correct: new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'),
         error: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
-        click: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'),
-        fail: new Audio('https://assets.mixkit.co/active_storage/sfx/953/953-preview.mp3')
+        pass: new Audio('https://assets.mixkit.co/active_storage/sfx/953/953-preview.mp3')
     };
 
     const words = [
@@ -157,11 +179,9 @@
         document.getElementById('menu-screen').style.display = 'none';
         document.getElementById('game-screen').style.display = 'block';
         document.getElementById('tube-container').style.display = 'flex';
-        document.body.classList.add('day-mode'); // Gündüz resmine geçer
+        document.body.classList.add('day-mode');
         
-        if(mode === 'timed') {
-            document.getElementById('timed-info').style.display = 'block';
-        }
+        if(mode === 'timed') document.getElementById('timed-info').style.display = 'block';
         
         startStopwatch();
         loadLevel();
@@ -181,8 +201,6 @@
             inp.className = 'letter-input';
             inp.maxLength = 1;
             inp.addEventListener('input', (e) => {
-                sounds.click.currentTime = 0;
-                sounds.click.play();
                 if(e.target.value && box.children[i+1]) box.children[i+1].focus();
                 checkAnswer();
             });
@@ -207,7 +225,7 @@
                 score++;
                 updateTube();
                 clearInterval(countdown);
-                setTimeout(next, 800);
+                setTimeout(next, 700);
             } else {
                 sounds.error.play();
                 inps.forEach(i => {
@@ -219,12 +237,12 @@
     }
 
     function passQuestion() {
-        sounds.fail.play();
-        document.getElementById('reveal-zone').textContent = "Doğru Cevap: " + gameData[currentIndex].a;
+        sounds.pass.play();
+        document.getElementById('reveal-zone').textContent = "CEVAP: " + gameData[currentIndex].a;
         const inps = document.querySelectorAll('.letter-input');
         inps.forEach((inp, idx) => {
             inp.value = gameData[currentIndex].a[idx];
-            inp.style.color = 'var(--neon-red)';
+            inp.disabled = true;
         });
         clearInterval(countdown);
         setTimeout(next, 1500);
@@ -266,10 +284,10 @@
 
     function finish() {
         clearInterval(timer);
-        document.body.classList.remove('day-mode'); // Gece resmine geri döner
+        document.body.classList.remove('day-mode');
         document.getElementById('game-screen').style.display = 'none';
         document.getElementById('final-screen').style.display = 'block';
-        document.getElementById('final-stats').innerHTML = `Süre: ${document.getElementById('stopwatch').textContent}<br>Başarı: 10 soruda ${score} doğru!`;
+        document.getElementById('final-stats').innerHTML = `Süre: ${document.getElementById('stopwatch').textContent}<br>Toplam Skor: ${score} / 10`;
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
     }
 </script>
